@@ -232,8 +232,8 @@ __pycache__/
 *.py[cod]
 
 # Local probe / test data
-.probe-live/
-.test-data/
+.probe-live
+.test-data
 
 # Secrets and per-user configuration
 .env

@@ -1,0 +1,125 @@
+name: valuebot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'valuebot/**'
+      - '.github/workflows/valuebot.yml'
+  pull_request:
+    paths:
+      - 'valuebot/**'
+      - '.github/workflows/valuebot.yml'
+
+concurrency:
+  group: valuebot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.12 is the supported default; 3.11 and 3.13 are the declared range.
+        # 3.14 is excluded — edgartools and sec-parser do not import on it.
+        python-version: ['3.11', '3.12', '3.13']
+
+    defaults:
+      run:
+        working-directory: valuebot
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: valuebot/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run the offline test suite
+        run: python -m pytest tests -q
+
+  package:
+    name: Package manifest check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: valuebot
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the plugin and MCP manifests agree
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys
+
+          plugin = json.loads(pathlib.Path("plugin.json").read_text())
+          mcp = json.loads(pathlib.Path("mcp.json").read_text())
+
+          errors = []
+
+          if plugin["$schema"] != "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json":
+              errors.append(f"plugin.json schema is not 1.0.0: {plugin['$schema']}")
+          if mcp["$schema"] != "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json":
+              errors.append(f"mcp.json schema is not 1.0.0: {mcp['$schema']}")
+          if plugin.get("license") != "MIT":
+              errors.append(f"plugin.json license is not MIT: {plugin.get('license')}")
+          if not pathlib.Path("LICENSE").is_file():
+              errors.append("LICENSE file is missing")
+
+          # The loader substitutes ${PLUGIN_ROOT} and ${PLUGIN_DATA} in env
+          # values, args and cwd — but NOT in `command`, which must be a bare
+          # executable. See docs/dev/08-deployment.md.
+          for name, server in mcp.get("mcpServers", {}).items():
+              command = server.get("command", "")
+              if "${" in command:
+                  errors.append(f"mcp.json {name}.command contains a placeholder: {command}")
+              for key in ("args", "cwd"):
+                  value = server.get(key, [])
+                  if isinstance(value, list):
+                      value = " ".join(value)
+                  if key == "cwd" and not str(value).startswith("${PLUGIN_ROOT}"):
+                      errors.append(f"mcp.json {name}.cwd must be inside ${PLUGIN_ROOT}: {value}")
+
+          if errors:
+              for e in errors:
+                  print(f"::error::{e}")
+              sys.exit(1)
+
+          print(f"valuebot {plugin['version']}: manifests OK")
+          PY
+
+      - name: Check that the docs links resolve
+        run: |
+          python - <<'PY'
+          import pathlib, re, sys
+
+          root = pathlib.Path(".")
+          broken = []
+          pattern = re.compile(r"\[[^\]]*\]\((?!https?://|mailto:)([^)#\s]+)(?:#[^)\s]*)?\)")
+
+          for md in sorted(root.glob("**/*.md")):
+              if ".venv" in md.parts:
+                  continue
+              for target in pattern.findall(md.read_text()):
+                  resolved = (md.parent / target).resolve()
+                  if not resolved.exists():
+                      broken.append(f"{md}: {target}")
+
+          if broken:
+              for b in broken:
+                  print(f"::error::broken link — {b}")
+              sys.exit(1)
+
+          print("all relative links resolve")
+          PY

@@ -1,0 +1,42 @@
+# valuebot — LibreChat config helpers
+#
+# These are NOT part of the plugin: the plugin is wired up by `mcp.json` and
+# loaded from DEPLOYMENT_PLUGINS_DIR. Merge the blocks below into your own
+# `librechat.yaml`. Model endpoints live in `endpoints.example.yaml` and are
+# documented in `docs/users/07-model-endpoints.md`.
+# LibreChat wiring and installation are covered in `docs/users/06-librechat-deployment.md`.
+
+version: 1.3.17
+cache: true
+
+# ---------------------------------------------------------------------------
+# Token-credit guardrail — the main cost ceiling for agentic loops.
+# Replace nothing else here; merge only the `balance` key.
+# ---------------------------------------------------------------------------
+balance:
+  enabled: true
+  startBalance: 5000000          # tokens per user at first login
+  autoRefillEnabled: true
+  refillIntervalValue: 7
+  refillIntervalUnit: 'days'
+  refillAmount: 2000000
+
+interface:
+  # Show per-conversation cost so a runaway loop is visible immediately.
+  contextCost: true
+
+# ---------------------------------------------------------------------------
+# Actions — OPTIONAL. The plugin's MCP server covers SEC facts, analysis and
+# filing semantics. Only news data lives behind a live service, so this
+# whitelist exists solely to let LibreChat reach news-explorer's OpenAPI spec.
+#
+# LibreChat blocks private/internal hosts for Actions unless listed here.
+# Delete this block if you do not run news-explorer.
+# ---------------------------------------------------------------------------
+actions:
+  allowedDomains:
+    - 'http://news-explorer:8000'
+
+# NOTE: do NOT add `mcpServers` here. The plugin owns it via `mcp.json`;
+# `librechat.yaml` entries with the same name take precedence and would
+# silently shadow the bundled server.

@@ -1,0 +1,24 @@
+[project]
+name = "valuebot-mcp"
+version = "0.2.0"
+description = "valuebot v2 MCP server: edgartools fundamentals, analysis, sec-parser reports"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "mcp>=2.2.0",
+    "edgartools>=5.58,<6",
+    "sec-parser>=0.58.1,<0.59",
+    "beautifulsoup4>=4.14,<5",
+    "lxml>=5.2.2,<6",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+price = ["yfinance>=1.5.0", "tzdata>=2024.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["../tests"]
+addopts = "-q"
+
+[tool.uv]
+# The MCP server is a script, not an installable package.
+package = false

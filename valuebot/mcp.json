@@ -1,0 +1,26 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "vw-mcp": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "--project", "${PLUGIN_ROOT}/mcp", "server.py"],
+      "cwd": "${PLUGIN_ROOT}/mcp",
+      "env": {
+        "EDGAR_LOCAL_DATA_DIR": "${PLUGIN_DATA}/edgar",
+        "EDGAR_RATE_LIMIT_PER_SEC": "5",
+        "EDGAR_HTTP_TIMEOUT": "30",
+        "VW_THESIS_ROOT": "/vw-data/theses",
+        "VW_MAX_HTML_MB": "40",
+        "VW_MAX_FACTS_COMPANIES": "100",
+        "VW_ENABLE_PRICE": "0",
+        "VW_ARTIFACT_HTTP_PORT": "0",
+        "VW_ARTIFACT_HTTP_HOST": "127.0.0.1",
+        "VW_ARTIFACT_PUBLIC_BASE_URL": "",
+        "UV_PROJECT_ENVIRONMENT": "${PLUGIN_DATA}/uv-env",
+        "UV_CACHE_DIR": "${PLUGIN_DATA}/uv-cache",
+        "UV_PYTHON_INSTALL_DIR": "${PLUGIN_DATA}/uv-python"
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "manifest_version": "0.2",
+  "name": "valuebot",
+  "version": "0.2.0",
+  "description": "Financial-research MCP server: XBRL fundamentals, ratio and DCF analysis, and sec-parser filing semantics, with grounded citations.",
+  "author": {
+    "name": "ValueWaffle",
+    "url": "https://github.com/valuewaffle/valuebot"
+  },
+  "license": "MIT",
+  "keywords": [
+    "finance",
+    "sec-filings",
+    "xbrl",
+    "citations",
+    "dcf"
+  ],
+  "server": {
+    "type": "python",
+    "entry_point": "mcp/server.py",
+    "mcp_config": {
+      "command": "sh",
+      "args": [
+        "${__dirname}/mcp/run.sh"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "SEC_USER_AGENT": "${user_config.sec_email}",
+        "EDGAR_RATE_LIMIT_PER_SEC": "5",
+        "EDGAR_HTTP_TIMEOUT": "30"
+      }
+    }
+  },
+  "user_config": {
+    "sec_email": {
+      "type": "string",
+      "title": "SEC contact email",
+      "description": "The SEC requires automated EDGAR clients to send a User-Agent that identifies a real, reachable mailbox. This value is sent verbatim as SEC_USER_AGENT. Use a mailbox you actually read; the setup rejects obvious placeholders and your data requests will fail without a valid address.",
+      "required": true
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "python": ">=3.11"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "valuebot",
+  "version": "0.2.0",
+  "description": "Financial-research Agent Plugin: isolated modules for XBRL fundamentals, ratio and DCF analysis, and sec-parser filing semantics, all with grounded citations.",
+  "author": {
+    "name": "ValueWaffle",
+    "url": "https://github.com/valuewaffle/valuebot"
+  },
+  "license": "MIT",
+  "keywords": [
+    "finance",
+    "sec-filings",
+    "xbrl",
+    "citations",
+    "dcf",
+    "research"
+  ]
+}

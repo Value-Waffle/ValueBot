@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/valuewaffle/valuebot/discussions
+    about: Ask a question, or discuss a capability before opening an issue.
+  - name: Security vulnerability
+    url: https://github.com/valuewaffle/valuebot/security/advisories/new
+    about: Report a vulnerability privately. Please do not open a public issue.
+  - name: Roadmap
+    url: https://github.com/valuewaffle/valuebot/blob/main/valuebot/docs/roadmap.md
+    about: See what is already planned and when it is expected to ship.

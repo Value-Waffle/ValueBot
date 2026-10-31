@@ -1,0 +1,80 @@
+name: Feature request
+description: Propose a capability, a tool, or a change in behaviour
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read the [roadmap](https://github.com/valuewaffle/valuebot/blob/main/valuebot/docs/roadmap.md)
+        before filing — the capability you are asking for may already be scoped
+        into a release window, in which case a discussion is more useful than
+        an issue.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: >
+        Describe the situation you are in and what you cannot do today. A
+        concrete problem is easier to scope than a described feature.
+      placeholder: >
+        When I compare two issuers in the same industry I have to pull revenue,
+        operating margin and debt by hand, because the tools only take one
+        symbol at a time.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: A sketch is enough. Include example tool arguments if you have them in mind.
+      placeholder: |
+        A `peer_compare` tool that takes two tickers and returns the same
+        metrics side by side, each with its own citations.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: Primary source
+      description: >
+        Where would this data come from? valuebot's rule is that every number
+        must trace to a filing, so this matters.
+      options:
+        - Already in SEC filings (10-K, 10-Q, 8-K, DEF 14A, Form 4, XBRL)
+        - Derived from data valuebot already retrieves
+        - A new primary source that I can name
+        - Not filing-based — I understand this needs a different citation model
+    validations:
+      required: true
+
+  - type: textarea
+    id: module
+    attributes:
+      label: Which module would own this?
+      description: >
+        Optional. If you have looked at the architecture, this helps.
+      placeholder: analysis
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered
+      description: Including workarounds you use today.
+    validations:
+      required: false
+
+  - type: textarea
+    id: contribution
+    attributes:
+      label: Would you like to implement this?
+      description: >
+        Mention this if you are willing to build it. Design discussions happen
+        before code — a new module or a new cross-module edge needs a
+        conversation, not a pull request.
+    validations:
+      required: false

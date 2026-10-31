@@ -1,0 +1,112 @@
+name: Bug report
+description: Something in valuebot is wrong, wrong, or broken
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug.
+
+        **Before you continue:** if the tool returned an error, check whether the
+        SEC address is configured and working — the most common cause is a
+        missing or rejected User-Agent. See
+        [Configuration → SEC User-Agent](https://github.com/valuewaffle/valuebot/blob/main/valuebot/docs/users/02-configuration.md#sec-user-agent).
+
+        Please search existing issues first; this may already be known.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened
+      description: One or two sentences. What did you expect, and what did you get?
+      placeholder: dcf_compute returned a null value for net_debt_to_ebitda even though both inputs are present.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The exact tool call and arguments, if a tool was involved.
+      placeholder: |
+        1. Ask the agent: "run ratio_compute for AAPL with net_debt_to_ebitda"
+        2. Tool call: ratio_compute(symbol="AAPL", metrics=["net_debt_to_ebitda"])
+        3. Response contains quality: "not_meaningful"
+    validations:
+      required: true
+
+  - type: input
+    id: tool
+    attributes:
+      label: Tool name
+      description: Which valuebot tool was involved, if any.
+      placeholder: dcf_compute
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Impact
+      options:
+        - Data is wrong or misleading
+        - A tool fails or returns an error
+        - Slow or times out
+        - Documentation is wrong or missing
+        - Cannot install or load the plugin
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should have happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: citations
+    attributes:
+      label: Citations from the response
+      description: >
+        If the tool returned citations, paste them. They let us tell whether the
+        bug is in the data, the parsing, or the arithmetic.
+      placeholder: '[{"accession": "0000320193-25-000073", "form": "10-K", ...}]'
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: >
+        valuebot version, LibreChat version, Python version, and whether you run
+        in Docker.
+      placeholder: |
+        valuebot: 0.2.0
+        LibreChat: 0.8.8 (librechat-dev:latest, Docker)
+        Python: 3.12
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: >
+        From the LibreChat container, the lines mentioning the tool:
+        `docker logs --since 10m LibreChat 2>&1 | grep -E '\[MCP\]\[vw-mcp\]'`
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I have redacted any personal or confidential information from the log output.
+          required: false

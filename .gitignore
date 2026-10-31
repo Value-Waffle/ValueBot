@@ -218,3 +218,33 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- valuebot workspace -----------------------------------------------------
+# Local agent-orchestration state (per-delegation job cards and reports)
+.agent_state/
+
+# Local virtualenvs and caches (the MCP server keeps one under mcp/)
+.venv/
+.dev-venv/
+.uv-*/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+
+# Local probe / test data
+.probe-live/
+.test-data/
+
+# Secrets and per-user configuration
+.env
+.env.*
+!.env.example
+identity.json
+
+# Runtime stores and built bundles
+*.sqlite
+dist/
+*.mcpb
+
+# macOS
+.DS_Store

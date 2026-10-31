@@ -1,0 +1,123 @@
+# valuebot — LibreChat custom endpoints (OpenCode Go + OpenCode Zen + DeepSeek official API)
+#
+# Merge the `version`, `cache` and `endpoints` keys into your own
+# librechat.yaml (keep every key you already have). See docs/users/07-model-endpoints.md.
+#
+# Secrets are read from the environment of the LibreChat process — put them in
+# LibreChat's .env, never in this file.
+
+version: 1.3.17
+cache: true
+
+endpoints:
+  custom:
+    # ---------------------------------------------------------------------
+    # DeepSeek — official platform API (OpenAI-compatible)
+    # https://platform.deepseek.com  ·  OpenAI-compatible: /chat/completions
+    # ---------------------------------------------------------------------
+    - name: 'DeepSeek'
+      apiKey: '${DEEPSEEK_API_KEY}'
+      baseURL: 'https://api.deepseek.com/v1'
+      models:
+        # Pinned defaults so the picker works even with fetch disabled.
+        default:
+          - 'deepseek-flash'
+          - 'deepseek-v4-pro'
+        # GET /models is supported, so live discovery is safe.
+        fetch: true
+      titleConvo: true
+      # Cheap/fast model for titling; keeps the expensive model for answers.
+      titleModel: 'deepseek-flash'
+      # DeepSeek documents these as deprecated/ignored and rejects some
+      # combinations in thinking mode — drop them instead of sending them.
+      dropParams:
+        - 'frequency_penalty'
+        - 'presence_penalty'
+      modelDisplayLabel: 'DeepSeek'
+
+    # ---------------------------------------------------------------------
+    # OpenCode Zen — paid model gateway (OpenAI-compatible chat endpoint)
+    # https://opencode.ai  ·  OpenAI-compatible: /inference/v1/chat/completions
+    #
+    # NOTE: use the `/inference/v1` prefix, NOT `/inference/openai/v1`.
+    # Only the *chat/completions* models are listed below — the gateway's
+    # GPT / Claude / Gemini / Grok routes live on `/responses`,
+    # `/anthropic/v1/messages` and `/google/v1beta` and will not work here.
+    # ---------------------------------------------------------------------
+    - name: 'OpenCode Zen'
+      apiKey: '${OPENCODE_API_KEY}'
+      baseURL: 'https://opencode.ai/inference/v1'
+      models:
+        default:
+          - 'deepseek-v4.1-flash'
+          - 'glm-5.3'
+          - 'kimi-k2.7-code'
+          - 'minimax-m3'
+          - 'qwen3.8-max'
+        # `/inference/v1/models` responds 200; `fetch: true` works with this
+        # prefix (it 404s on `/inference/openai/v1/models`).
+        fetch: true
+      titleConvo: true
+      titleModel: 'deepseek-v4.1-flash'
+      modelDisplayLabel: 'OpenCode Zen'
+
+    # ---------------------------------------------------------------------
+    # OpenCode Go — paid model gateway (OpenAI-compatible chat endpoint)
+    # https://opencode.ai  ·  OpenAI-compatible: /zen/go/v1/chat/completions
+    #
+    # `GET /zen/go/v1/models` is unauthenticated and advertises 37 ids with no
+    # metadata (no context length, pricing or capabilities). Several of those
+    # ids are served on other routes — GPT on /responses, Claude on
+    # /anthropic/v1/messages, Gemini on /google/v1beta — so the curated list
+    # below keeps only chat/completions models and `fetch` stays false.
+    # Full catalogue: docs/users/07-model-endpoints.md#4-opencode-go
+    # ---------------------------------------------------------------------
+    - name: 'OpenCode Go'
+      apiKey: '${OPENCODE_GO_API_KEY}'
+      baseURL: 'https://opencode.ai/zen/go/v1'
+      models:
+        default:
+          - 'deepseek-v4.1-flash'
+          - 'deepseek-v4-pro'
+          - 'glm-5.3'
+          - 'glm-5.3-flash'
+          - 'kimi-k3'
+          - 'kimi-k2.7-code'
+          - 'minimax-m3'
+          - 'mimo-v2.6-pro'
+          - 'qwen3.8-max'
+          - 'qwen3.8-flash'
+          - 'grok-4.7'
+        # Set true only if you want all 37 advertised ids in the picker,
+        # including the ones that need a non-chat route.
+        fetch: false
+      titleConvo: true
+      titleModel: 'deepseek-v4.1-flash'
+      dropParams:
+        - 'frequency_penalty'
+        - 'presence_penalty'
+      modelDisplayLabel: 'OpenCode Go'
+
+    # ---------------------------------------------------------------------
+    # OPTIONAL — a second DeepSeek key on the free/promo tier, or a regional
+    # proxy. Duplicate the block above, rename `name`, point baseURL at the
+    # proxy, and keep apiKey on a different env var.
+    # ---------------------------------------------------------------------
+    # - name: 'DeepSeek (proxy)'
+    #   apiKey: '${DEEPSEEK_PROXY_KEY}'
+    #   baseURL: 'https://your-proxy.example.com/v1'
+    #   models:
+    #     default: ['deepseek-flash']
+    #     fetch: false
+    #   titleConvo: false
+    #   modelDisplayLabel: 'DeepSeek via proxy'
+
+    # ---------------------------------------------------------------------
+    # NOT SUPPORTED AS A CUSTOM ENDPOINT — for the record.
+    #
+    # The `opencode` CLI can run a local server (`opencode serve`, default
+    # http://127.0.0.1:4096), but it is NOT OpenAI-compatible: it exposes
+    # POST /session, /session/:id/message and /event, with no
+    # /v1/chat/completions. LibreChat custom endpoints therefore cannot talk
+    # to it. Use OpenCode Zen (above) for hosted models.
+    # ---------------------------------------------------------------------

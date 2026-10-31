@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "vw-mcp": {
+      "type": "stdio",
+      "command": "sh",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/run.sh"]
+    }
+  }
+}
+

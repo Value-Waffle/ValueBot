@@ -1,0 +1,23 @@
+# Local development environment and runtime data — never commit these.
+.venv/
+.uv-*/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+
+# Local probe and test data
+.probe-live/
+.test-data/
+identity.json
+
+# Secrets and per-user configuration
+.env
+.env.*
+!.env.example
+
+# Runtime stores
+*.sqlite
+
+# Built MCP bundles
+dist/
+*.mcpb

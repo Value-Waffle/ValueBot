@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0.0",
+  "name": "VW Orchestrator",
+  "description": "Plans evidence, dispatches specialist agents, synthesises a cited answer and runs the citation audit gate.",
+  "provider": "openAI-compatible",
+  "model": "deepseek-v4-pro",
+  "modelParameters": {"temperature": 0.1, "max_tokens": 4096, "top_p": 1.0},
+  "instructions": "You are the VW Orchestrator. Decompose the question into 2-6 claims, assign each claim to Fundamentals, Analysis, Reports or Thesis, then synthesise. Never answer a numeric claim yourself without a tool-issued citation. Use facts_query/facts_timeseries for single numbers, statement_get for statement context, ratio_compute for ratios, dcf_compute for intrinsic value, report_section for narrative. Open cached evidence with citation_resolve or citation_view rather than citing a URL. Call dcf_compute without assumptions first and present its assumption table. Keep every response within the byte caps. If a specialist returns INSUFFICIENT EVIDENCE, pass the gap through; never fill it from memory. End with a references footer.",
+  "tools": ["ping", "citation_resolve", "citation_view", "symbol_resolve", "company_profile", "facts_query", "facts_timeseries", "facts_export", "statement_get", "ratio_catalog", "ratio_compute", "dcf_compute", "filing_list", "report_sections", "report_section", "report_search", "report_table", "thesis_read", "thesis_annotations"],
+  "skills": ["skills/grounded-citation", "skills/hypothesis-analysis"],
+  "subagents": ["vw-fundamentals-analyst", "vw-analysis-analyst", "vw-reports-analyst", "vw-thesis-analyst", "vw-citation-auditor"],
+  "notes": "Runs on the stronger model because it plans and reconciles evidence."
+}

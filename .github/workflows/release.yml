@@ -1,0 +1,127 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Tests (Python 3.12)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: valuebot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: valuebot/requirements.txt
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - run: python -m pytest tests -q
+
+  verify-versions:
+    name: Version consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Compare tag, plugin.json and manifest.json
+        run: |
+          python - <<'PY'
+          import json, os, re, sys
+          tag = os.environ["GITHUB_REF_NAME"]
+          m = re.fullmatch(r"v(\d+\.\d+\.\d+)", tag)
+          if not m:
+              print(f"::error::tag {tag} is not vMAJOR.MINOR.PATCH")
+              sys.exit(1)
+          version = m.group(1)
+          plugin = json.loads(open("valuebot/plugin.json").read())["version"]
+          manifest = json.loads(open("valuebot/mcpb/manifest.json").read())["version"]
+          errors = []
+          if plugin != version:
+              errors.append(f"plugin.json {plugin} != tag {version}")
+          if manifest != version:
+              errors.append(f"mcpb/manifest.json {manifest} != tag {version}")
+          if errors:
+              for e in errors:
+                  print(f"::error::{e}")
+              sys.exit(1)
+          print(f"version {version}: consistent")
+          PY
+
+  build:
+    name: Build bundle
+    needs: [test, verify-versions]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build .mcpb
+        working-directory: valuebot
+        run: sh mcpb/build.sh --out dist
+      - name: Checksum
+        working-directory: valuebot
+        run: |
+          cd dist
+          sha256sum valuebot-*.mcpb > valuebot-*.mcpb.sha256
+          cat *.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: valuebot-bundle
+          path: valuebot/dist/*
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: valuebot-bundle
+          path: dist
+      - name: Extract release notes
+        id: notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          python - "$version" <<'PY'
+          import pathlib, re, sys
+          version = sys.argv[1]
+          text = pathlib.Path("CHANGELOG.md").read_text()
+          # Find the section for this version.
+          pattern = re.compile(
+              rf"^## \[{re.escape(version)}\].*?(?=^## \[|\Z)",
+              re.MULTILINE | re.DOTALL,
+          )
+          match = pattern.search(text)
+          body = match.group(0).strip() if match else f"Release {version}."
+          pathlib.Path("/tmp/release-notes.md").write_text(body + "\n")
+          PY
+          echo "notes=/tmp/release-notes.md" >> "$GITHUB_OUTPUT"
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: /tmp/release-notes.md
+          files: |
+            dist/*
+          draft: false
+          prerelease: false

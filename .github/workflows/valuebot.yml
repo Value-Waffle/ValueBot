@@ -11,6 +11,9 @@ on:
       - 'valuebot/**'
       - '.github/workflows/valuebot.yml'
 
+permissions:
+  contents: read
+
 concurrency:
   group: valuebot-${{ github.ref }}
   cancel-in-progress: true
